@@ -22,7 +22,7 @@ class CarnetOrdres:
         if ordre.type_ordre.lower() == "achat":
             # on recherche les ordre de vente qui ont un prix supérieur ou égal au prix de l'ordre d'achat'
             for vente in self.ventes:
-                if vente.prix >= ordre.prix:
+                if vente.prix == ordre.prix:
                     quantite_exec = min(ordre.quantite, vente.quantite)
                     print(f"L'ordre d'achat de {ordre.quantite} au prix de {ordre.prix} a été exécuté "
                           f"avec {quantite_exec} du côté vente au prix de {vente.prix}.")
@@ -39,7 +39,7 @@ class CarnetOrdres:
         elif ordre.type_ordre.lower() == "vente":
             #on recherche les ordre d'achat qui ont un prix supérieur ou égal au prix de l'ordre de vente'
             for achat in self.achats:
-                if achat.prix >= ordre.prix:
+                if achat.prix == ordre.prix:
                     quantite_exec = min(ordre.quantite, achat.quantite)
                     print(f"L'ordre de vente de {ordre.quantite} au prix de {ordre.prix} a été exécuté "
                           f"avec {quantite_exec} du côté achat au prix de {achat.prix}.")
