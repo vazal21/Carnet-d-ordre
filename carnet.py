@@ -1,3 +1,4 @@
+TICK_SIZE = 0,01 #on rajoute la notion de tick
 class Ordre:
     def __init__(self, type_ordre, quantite, prix=None):
         self.type_ordre = type_ordre
@@ -20,10 +21,10 @@ class CarnetOrdres:
     def ajouter_ordre(self, ordre):
         if ordre.type_ordre.lower() == "achat":
             self.achats.append(ordre)
-            self.achats.sort(key=lambda x: -x.prix if x.prix else float('-inf'))  # on trie par prix décroissant
+            self.achats.sort(key=lambda x: -x.prix if x.prix else float('-inf'),-x.quanitite)  # on trie par prix décroissant
         elif ordre.type_ordre.lower() == "vente":
             self.ventes.append(ordre)
-            self.ventes.sort(key=lambda x: x.prix if x.prix else float('inf'))  # on trie par prix croissant
+            self.ventes.sort(key=lambda x: x.prix if x.prix else float('inf'),-x.quantite)  # on trie par prix croissant
 
     def afficher_carnet(self):
         print("\nCarnet d'ordres :")
@@ -40,6 +41,10 @@ class CarnetOrdres:
             else:
                 print()
 
+#fonction permettant d'aligner le prix sur le tick
+def aligner_tick(prix):
+    return round(prix/TICK_SIZE)*TICK_SIZE
+    
 def creer_carnet_predefini():
     carnet = CarnetOrdres()
     # Ajout de 10 ordres d'achat et de vente prédéfinis
