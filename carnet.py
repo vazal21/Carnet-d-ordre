@@ -20,11 +20,40 @@ class CarnetOrdres:
 
     def ajouter_ordre(self, ordre):
         if ordre.type_ordre.lower() == "achat":
-            self.achats.append(ordre)
-            self.achats.sort(key=lambda x: -x.prix if x.prix else float('-inf'),-x.quanitite)  # on trie par prix décroissant
+            # on recherche les ordre de vente qui ont un prix supérieur ou égal au prix de l'ordre d'achat'
+            for vente in self.ventes:
+                if vente.prix >= ordre.prix:
+                    quantite_exec = min(ordre.quantite, vente.quantite)
+                    print(f"L'ordre d'achat de {ordre.quantite} au prix de {ordre.prix} a été exécuté "
+                          f"avec {quantite_exec} du côté vente au prix de {vente.prix}.")
+                    vente.quantite -= quantite_exec
+                    ordre.quantite -= quantite_exec
+                    if vente.quantite == 0:
+                        self.ventes.remove(vente)
+                    if ordre.quantite == 0:
+                        return  # ordre d'achat excecuté
+            # Si reste  des quantités non exécutées on ajoute l'ordre d'achat restant
+            if ordre.quantite > 0:
+                self.achats.append(ordre)
+                self.achats.sort(key=lambda x: x.prix)  # Tri par prix croissant
         elif ordre.type_ordre.lower() == "vente":
-            self.ventes.append(ordre)
-            self.ventes.sort(key=lambda x: x.prix if x.prix else float('inf'),-x.quantite)  # on trie par prix croissant
+            #on recherche les ordre d'achat qui ont un prix supérieur ou égal au prix de l'ordre de vente'
+            for achat in self.achats:
+                if achat.prix >= ordre.prix:
+                    quantite_exec = min(ordre.quantite, achat.quantite)
+                    print(f"L'ordre de vente de {ordre.quantite} au prix de {ordre.prix} a été exécuté "
+                          f"avec {quantite_exec} du côté achat au prix de {achat.prix}.")
+                    achat.quantite -= quantite_exec
+                    ordre.quantite -= quantite_exec
+                    if achat.quantite == 0:
+                        self.achats.remove(achat)
+                    if ordre.quantite == 0:
+                        return  # ordre de vente exécuté
+            # Si reste quantités non exécutées, ajouter l'ordre de vente restant
+            if ordre.quantite > 0:
+                self.ventes.append(ordre)
+                self.ventes.sort(key=lambda x: x.prix, reverse=True)  # Tri par prix décroissant
+
 
     def afficher_carnet(self):
         print("\nCarnet d'ordres :")
