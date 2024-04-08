@@ -48,13 +48,19 @@ def creer_carnet_predefini():
         carnet.ajouter_ordre(Ordre("Vente", i * 10, 110 - i)) 
     return carnet
 
-#fonction permettat d'éxécuter l'ordre de l'utilisateur 
+#fonction permettant d'éxécuter l'ordre de l'utilisateur 
 def saisir_nouvel_ordre():
-    type_ordre = input("Entrez le type d'ordre (Achat/Vente) : ")
+    type_ordre = input("Entrez le type d'ordre (Achat/Vente) : ").capitalize()
     quantite = int(input("Entrez la quantité : "))
-    prix = float(input("Entrez le prix : "))
+    #on va demander à l'utilisateru s'il souhaite vendre au prix de marché
+    prix_de_marche = input("Voulez-vous réaliser votre ordre au prix de marché ? (Oui/Non) : ").lower()
+    
+    if prix_de_marche == "oui":
+        prix = None  # Prix de marché
+    else:
+        prix = float(input("Entrez le prix : "))
+    
     return Ordre(type_ordre, quantite, prix)
-
 # Création du carnet d'ordres prédéfini
 carnet = creer_carnet_predefini()
 
