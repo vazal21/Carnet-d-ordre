@@ -68,7 +68,7 @@ class CarnetOrdres:
             prix_fixing = self.trouver_prix_fixing_ouverture()
             self.afficher_carnet()
             print(f"Prix de fixing de {type_fixing} : {prix_fixing}")
-    
+
 
     def trouver_prix_fixing_ouverture(self):
         prix_fixing = DEFAULT_PRICE
