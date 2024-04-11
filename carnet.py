@@ -86,9 +86,19 @@ class CarnetOrdres:
         for _ in range(FIXING_DURATION):
             nouvel_ordre = saisir_nouvel_ordre()
             self.ajouter_ordre(nouvel_ordre)
-        prix_fixing = self.trouver_prix_marche("vente")
+        prix_fixing = self.trouver_prix_fixing_cloture()
         print(f"Prix de fixing de clôture : {prix_fixing}")
 
+    def trouver_prix_fixing_cloture(self):
+        prix_fixing = DEFAULT_PRICE
+        for vente in self.ventes:
+            cumul_vente = sum(v.quantite for v in self.ventes if v.prix >= vente.prix)
+            cumul_achat = sum(a.quantite for a in self.achats if a.prix <= vente.prix)
+            ecart = cumul_vente - cumul_achat
+            if ecart > 0:
+                prix_fixing = vente.prix
+                break
+        return prix_fixing
 
 def creer_carnet_predefini():
     carnet = CarnetOrdres()
