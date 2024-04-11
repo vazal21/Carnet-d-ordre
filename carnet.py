@@ -1,7 +1,7 @@
 from itertools import zip_longest
 
-DEFAULT_PRICE = 110 
-FIXING_DURATION = 2 
+DEFAULT_PRICE = 110  # Prix par défaut si le carnet d'ordres est vide
+FIXING_DURATION = 2  # Durée du fixing en minutes / le temps pour l'utilisateur de rentrer des ordres d'achat ou de vente en pré-clôture
 
 class Ordre:
     def __init__(self, type_ordre, quantite, prix=None):
@@ -35,16 +35,10 @@ class CarnetOrdres:
         print("--------------------------------------------------------------------------------------------------------------------")
         print("| Ventes | Quantité | Cumul Vente | Cours | Cumul Achat | Quantité | Achats | Écart de transaction |")
         print("--------------------------------------------------------------------------------------------------------------------")
-
-    
-        self.ventes.sort(key=lambda x: x.prix)
-        self.achats.sort(key=lambda x: x.prix, reverse=True)
-
-        cumul_vente = 0
-        cumul_achat = 0
-        for vente, achat in zip_longest(self.ventes, self.achats, fillvalue=Ordre("", "", "")):
-            cumul_vente += vente.quantite if vente else 0
-            cumul_achat += achat.quantite if achat else 0
+        achats_inverse = sorted(self.achats, key=lambda x: x.prix, reverse=True)
+        for vente, achat in zip_longest(self.ventes, achats_inverse, fillvalue=Ordre("", "", "")):
+            cumul_vente = sum(v.quantite for v in self.ventes if v.prix >= vente.prix)
+            cumul_achat = sum(a.quantite for a in achats_inverse if a.prix <= achat.prix)
             ecart = cumul_vente - cumul_achat
             print(f"| {vente.type_ordre.ljust(6)} | {str(vente.quantite).ljust(8)} | {str(cumul_vente).ljust(11)} | {str(vente.prix).ljust(5)} | {str(cumul_achat).ljust(11)} | {str(achat.quantite).ljust(8)} | {achat.type_ordre.ljust(6)} | {str(ecart).ljust(20)} |")
         print("--------------------------------------------------------------------------------------------------------------------")
@@ -96,12 +90,12 @@ def saisir_nouvel_ordre():
     type_ordre = input("Entrez le type d'ordre (Achat/Vente) : ").capitalize()
     quantite = int(input("Entrez la quantité : "))
     prix_de_marche = input("Voulez-vous réaliser votre ordre au prix de marché ? (Oui/Non) : ").lower()
-    
+
     if prix_de_marche == "oui":
         prix = None
     else:
         prix = float(input("Entrez le prix : "))
-    
+
     return Ordre(type_ordre, quantite, prix)
 
 carnet, ordres_predefinis = creer_carnet_predefini()
