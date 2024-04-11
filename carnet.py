@@ -30,6 +30,63 @@ class CarnetOrdres:
             self.achats.append(ordre)
             self.achats.sort(key=lambda x: x.prix)
 
+ChatGPT
+D'accord, voici un exemple de programme Python qui réalise cela :
+
+python
+Copy code
+from itertools import zip_longest
+
+DEFAULT_PRICE = 110  # Prix par défaut si le carnet d'ordres est vide
+FIXING_DURATION = 2  # Durée du fixing en minutes / le temps pour l'utilisateur de rentrer des ordres d'achat ou de vente en pré-clôture
+
+class Ordre:
+    def __init__(self, type_ordre, quantite, prix=None):
+        self.type_ordre = type_ordre
+        self.quantite = quantite
+        self.prix = prix
+
+    def afficher_ordre(self):
+        print("Type d'ordre:", self.type_ordre)
+        print("Quantité:", self.quantite)
+        if self.prix is not None:
+            print("Prix:", self.prix)
+        else:
+            print("Prix: Au prix de marché")
+
+class CarnetOrdres:
+    def __init__(self):
+        self.ventes = []
+        self.achats = []
+
+    def ajouter_ordre(self, ordre):
+        if ordre.type_ordre.lower() == "vente":
+            self.ventes.append(ordre)
+            self.ventes.sort(key=lambda x: x.prix, reverse=True)
+        elif ordre.type_ordre.lower() == "achat":
+            self.achats.append(ordre)
+            self.achats.sort(key=lambda x: x.prix)
+
+    def afficher_carnet(self):
+        print("\nCarnet d'ordres :")
+        print("--------------------------------------------------------------------------------------------------------------------")
+        print("| Ventes | Quantité | Cumul Vente | Cours | Cumul Achat | Quantité | Achats | Écart de transaction |")
+        print("--------------------------------------------------------------------------------------------------------------------")
+        achats_inverse = sorted(self.achats, key=lambda x: x.prix, reverse=True)
+        for vente, achat in zip_longest(self.ventes, achats_inverse, fillvalue=Ordre("", "", "")):
+            cumul_vente = sum(v.quantite for v in self.ventes if v.prix >= vente.prix)
+            cumul_achat = sum(a.quantite for a in achats_inverse if a.prix <= achat.prix)
+            ecart = cumul_vente - cumul_achat
+            print(f"| {vente.type_ordre.ljust(6)} | {str(vente.quantite).ljust(8)} | {str(cumul_vente).ljust(11)} | {str(vente.prix).ljust(5)} | {str(cumul_achat).ljust(11)} | {str(achat.quantite).ljust(8)} | {achat.type_ordre.ljust(6)} | {str(ecart).ljust(20)} |")
+        print("--------------------------------------------------------------------------------------------------------------------")
+
+    def trouver_prix_fixing(self):
+        for vente in self.ventes:
+            for achat in self.achats:
+                if vente.prix <= achat.prix:
+                    return vente.prix 
+        return DEFAULT_PRICE
+
     def afficher_carnet(self):
         print("\nCarnet d'ordres :")
         print("--------------------------------------------------------------------------------------------------------------------")
