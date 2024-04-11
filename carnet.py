@@ -30,19 +30,6 @@ class CarnetOrdres:
             self.achats.append(ordre)
             self.achats.sort(key=lambda x: x.prix)
 
-    def afficher_carnet(self):
-        print("\nCarnet d'ordres :")
-        print("--------------------------------------------------------------------------------------------------------------------")
-        print("| Ventes | Quantité | Cumul Vente | Cours | Cumul Achat | Quantité | Achats | Écart de transaction |")
-        print("--------------------------------------------------------------------------------------------------------------------")
-        achats_inverse = sorted(self.achats, key=lambda x: x.prix, reverse=True)
-        for vente, achat in zip_longest(self.ventes, achats_inverse, fillvalue=Ordre("", "", "")):
-            cumul_vente = sum(v.quantite for v in self.ventes if v.prix >= vente.prix)
-            cumul_achat = sum(a.quantite for a in achats_inverse if a.prix <= achat.prix)
-            ecart = cumul_vente - cumul_achat
-            print(f"| {vente.type_ordre.ljust(6)} | {str(vente.quantite).ljust(8)} | {str(cumul_vente).ljust(11)} | {str(vente.prix).ljust(5)} | {str(cumul_achat).ljust(11)} | {str(achat.quantite).ljust(8)} | {achat.type_ordre.ljust(6)} | {str(ecart).ljust(20)} |")
-        print("--------------------------------------------------------------------------------------------------------------------")
-
     def trouver_prix_fixing(self):
         for vente in self.ventes:
             for achat in self.achats:
