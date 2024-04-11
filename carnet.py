@@ -13,7 +13,7 @@ class Ordre:
         print("Type d'ordre:", self.type_ordre)
         print("Quantité:", self.quantite)
         if self.prix is not None:
-            print("Prix:", self.prix)
+            print("Prix: ", self.prix)
         else:
             print("Prix: Au prix de marché")
 
@@ -29,7 +29,6 @@ class CarnetOrdres:
         elif ordre.type_ordre.lower() == "achat":
             self.achats.append(ordre)
             self.achats.sort(key=lambda x: x.prix)
-
 
     def afficher_carnet(self):
         print("\nCarnet d'ordres :")
@@ -66,10 +65,21 @@ class CarnetOrdres:
         for ordre in ordres_predefinis:
             self.ajouter_ordre(ordre)
         if type_fixing.lower() == "ouverture":
-            prix_fixing = self.trouver_prix_marche("achat")
+            prix_fixing = self.trouver_prix_fixing_ouverture()
             self.afficher_carnet()
             print(f"Prix de fixing de {type_fixing} : {prix_fixing}")
+    
 
+    def trouver_prix_fixing_ouverture(self):
+        prix_fixing = DEFAULT_PRICE
+        for vente in self.ventes:
+            cumul_vente = sum(v.quantite for v in self.ventes if v.prix >= vente.prix)
+            cumul_achat = sum(a.quantite for a in self.achats if a.prix <= vente.prix)
+            ecart = cumul_vente - cumul_achat
+            if ecart > 0:
+                prix_fixing = vente.prix
+                break
+        return prix_fixing
 
     def creer_fixing_cloture(self):
         print("Fixing de clôture en cours...")
