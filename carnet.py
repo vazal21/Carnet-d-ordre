@@ -40,7 +40,7 @@ class CarnetOrdres:
         print("| Ventes | Quantité | Cumul Vente | Cours | Cumul Achat | Quantité | Achats | Écart de transaction |")
         print("--------------------------------------------------------------------------------------------------------------------")
         achats_inverse = sorted(self.achats, key=lambda x: x.prix, reverse=True)
-        for vente, achat in zip_longest(self.ventes, achats_inverse, fillvalue=Ordre("", "", "")):
+        for vente, achat in zip_longest(self.ventes, achats_inverse, fillvalue=Ordre("", "", 0)):
             cumul_vente = sum(v.quantite for v in self.ventes if v.prix >= vente.prix) # cumul vente
             cumul_achat = sum(a.quantite for a in achats_inverse if a.prix <= achat.prix) # cumul achat
             ecart = cumul_vente - cumul_achat # écart = cumul vente - cumul achat
@@ -146,5 +146,4 @@ while True: #on insère de nouveaux ordres apres le calcul de fixing effectué =
 carnet.afficher_carnet() #on affiche le carnet avec ces nouvelles ordres
 
 carnet.creer_fixing("cloture")  # Fixing d'ouverture
-
 
