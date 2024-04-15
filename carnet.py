@@ -92,15 +92,55 @@ class CarnetOrdres:
 
     def trouver_fixing_cloture(self):
         prix_fixing = DEFAULT_PRICE
-        for _ in range(FIXING_DURATION):
+        cumul_vente_initial = sum(vente.quantite for vente in self.ventes)
+        cumul_achat_initial = sum(achat.quantite for achat in self.achats)
+
+        for vente in self.ventes:
+            cumul_vente = sum(v.quantite for v in self.ventes if v.prix >= vente.prix)
+            cumul_achat = sum(a.quantite for a in self.achats if a.prix <= vente.prix)
+            ecart = cumul_vente - cumul_achat
+
+            if ecart > 0:
+                prix_fixing = vente.prix
+                break
+
+        # Vérifier si le fixing a été trouvé et ajuster les quantités en conséquence
+        if prix_fixing != DEFAULT_PRICE:
             for vente in self.ventes:
-                cumul_vente = sum(v.quantite for v in self.ventes if v.prix >= vente.prix)
-                cumul_achat = sum(a.quantite for a in self.achats if a.prix <= vente.prix)
-                ecart = cumul_vente - cumul_achat
-                if ecart > 0:
-                    prix_fixing = vente.prix
-                    break
-            return prix_fixing
+                vente.quantite -= min(vente.quantite, cumul_vente_initial - cumul_achat_initial)
+                if vente.quantite <= 0:
+                    self.ventes.remove(vente)
+
+            for achat in self.achats:
+                achat.quantite -= min(achat.quantite, cumul_vente_initial - cumul_achat_initial)
+                if achat.quantite <= 0:
+                    self.achats.remove(achat)
+
+        return prix_fixing
+
+    #execution des ordres
+    def executer_ordres(self):
+        for vente in self.ventes:
+            # Recherche d'un ordre d'achat correspondant à l'ordre de vente
+            for achat in self.achats:
+                if vente.prix <= achat.prix and vente.quantite > 0 and achat.quantite > 0:
+                    # Calculer la quantité à échanger
+                    quantite_echangee = min(vente.quantite, achat.quantite) # on calcule la quantité à  échanger
+                    vente.quantite -= quantite_echangee # on soustrait la quantité échangé
+                    achat.quantite -= quantite_echangee
+                    print(f"Ordre exécuté : Vente de {quantite_echangee} actions à {achat.prix} € chacune.")
+                    # Si l'un des ordres est complètement exécuté, le retirer du carnet
+                    if vente.quantite == 0:
+                        self.ventes.remove(vente)
+                    if achat.quantite == 0:
+                        self.achats.remove(achat)
+        # Afficher un message si des ordres restent non exécutés
+        for vente in self.ventes:
+            if vente.quantite > 0:
+                print(f"Ordre de vente partiellement exécuté : {vente.quantite} actions restantes.")
+        for achat in self.achats:
+            if achat.quantite > 0:
+                print(f"Ordre d'achat partiellement exécuté : {achat.quantite} actions restantes.")
 
 # on créer un carnet déja prédéfini
 def creer_carnet_predefini():
@@ -143,7 +183,8 @@ while True: #on insère de nouveaux ordres apres le calcul de fixing effectué =
     else:
         print("Veuillez répondre par 'Oui' ou 'Non'.")
 
+carnet.executer_ordres() # exceution des ordres apres le fixing douverture => continue
+
 carnet.afficher_carnet() #on affiche le carnet avec ces nouvelles ordres
 
 carnet.creer_fixing("cloture")  # Fixing d'ouverture
-
