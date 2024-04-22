@@ -3,7 +3,7 @@ from itertools import zip_longest
 DEFAULT_PRICE = 110  # Prix par défaut si le carnet d'ordres est vide
 FIXING_DURATION = 2  # Durée du fixing en minutes / le temps pour l'utilisateur de rentrer des ordres d'achat ou de vente en pré-clôture
 
-#on définit la classe ordre avec les attributs : type_ordre, quantite et prix
+# Définition de la classe Ordre avec les attributs : type_ordre, quantite et prix
 class Ordre:
     def __init__(self, type_ordre, quantite, prix=None):
         self.type_ordre = type_ordre
@@ -14,47 +14,47 @@ class Ordre:
         print("Type d'ordre:", self.type_ordre)
         print("Quantité:", self.quantite)
         if self.prix is not None:
-            print("Prix: ", self.prix)
+            print("Prix:", self.prix)
         else:
             print("Prix: Au prix de marché")
 
-# on définit la classe CarnetOrdres avec comme liste : ventes / achats
+# On définit de la classe CarnetOrdres avec comme listes : ventes / achats
 class CarnetOrdres:
     def __init__(self):
         self.ventes = []
         self.achats = []
 
-    #ajoute un nouvel ordre à la liste (soit ventes ou achats)
+    # Ajoute un nouvel ordre à la liste (soit ventes ou achats)
     def ajouter_ordre(self, ordre):
         if ordre.type_ordre.lower() == "vente":
-            self.ventes.append(ordre) #ajoute
-            self.ventes.sort(key=lambda x: x.prix, reverse=True) # trie par ordre décroissant
+            self.ventes.append(ordre)
+            self.ventes.sort(key=lambda x: x.prix, reverse=True)  # Trie par ordre décroissant
         elif ordre.type_ordre.lower() == "achat":
-            self.achats.append(ordre) #ajoute
-            self.achats.sort(key=lambda x: x.prix) #trie par ordre croissant
+            self.achats.append(ordre)
+            self.achats.sort(key=lambda x: x.prix)  # Trie par ordre croissant
 
-    #affiche le carnet sous la forme d'un tableau
+    # Affiche le carnet sous la forme d'un tableau
     def afficher_carnet(self):
         print("\nCarnet d'ordres :")
         print("--------------------------------------------------------------------------------------------------------------------")
         print("| Ventes | Quantité | Cumul Vente | Cours | Cumul Achat | Quantité | Achats | Écart de transaction |")
         print("--------------------------------------------------------------------------------------------------------------------")
-        achats_inverse = sorted(self.achats, key=lambda x: x.prix, reverse=True)
-        for vente, achat in zip_longest(self.ventes, achats_inverse, fillvalue=Ordre("", "", 0)):
-            cumul_vente = sum(v.quantite for v in self.ventes if v.prix >= vente.prix) # cumul vente
-            cumul_achat = sum(a.quantite for a in achats_inverse if a.prix <= achat.prix) # cumul achat
-            ecart = cumul_vente - cumul_achat # écart = cumul vente - cumul achat
+        ventes_triees = sorted(self.ventes, key=lambda x: x.prix)  # Tri des ordres de vente par prix croissant
+        achats_inverse = sorted(self.achats, key=lambda x: x.prix)  # Tri des ordres d'achat par prix croissant
+        for vente, achat in zip_longest(ventes_triees, achats_inverse, fillvalue=Ordre("", "", 0)):
+            cumul_vente = sum(v.quantite for v in self.ventes if v.prix <= vente.prix)  # cumul vente
+            cumul_achat = sum(a.quantite for a in achats_inverse if a.prix >= achat.prix)
+            ecart = cumul_vente - cumul_achat  # écart = cumul vente - cumul achat
             print(f"| {vente.type_ordre.ljust(6)} | {str(vente.quantite).ljust(8)} | {str(cumul_vente).ljust(11)} | {str(vente.prix).ljust(5)} | {str(cumul_achat).ljust(11)} | {str(achat.quantite).ljust(8)} | {achat.type_ordre.ljust(6)} | {str(ecart).ljust(20)} |")
         print("--------------------------------------------------------------------------------------------------------------------")
 
-    #détermine le prix de marché
+    # Détermine le prix de marché
     def trouver_prix_marche(self, type_ordre):
-        #si on souhaite acheter :
-        if type_ordre.lower() == "achat": # convertit en minuscule, sinon fonctionne pas
-            if self.ventes: # on recherche dans la colonne vente si des ordres de ventes existent à ce prix
-                prix_marche = min(vente.prix for vente in self.ventes) # si oui, on renvoit le prix le plus bas
+        if type_ordre.lower() == "achat":
+            if self.ventes:
+                prix_marche = min(vente.prix for vente in self.ventes)
             else:
-                prix_marche = DEFAULT_PRICE # si il n'y a pas d'ordre de vente à ce prix, on renvoit le prix par défaut (110)
+                prix_marche = DEFAULT_PRICE
         elif type_ordre.lower() == "vente":
             if self.achats:
                 prix_marche = max(achat.prix for achat in self.achats)
@@ -62,9 +62,9 @@ class CarnetOrdres:
                 prix_marche = DEFAULT_PRICE
         else:
             raise ValueError("Type d'ordre invalide")
-        return prix_marche # le prix du marché est stocké
+        return prix_marche
 
-    #calcule le prix de fixing (ouverture et cloture)
+    # Calcule le prix de fixing (ouverture et cloture)
     def creer_fixing(self, type_fixing, ordres_predefinis=None):
         print(f"Fixing de {type_fixing} en cours...")
         if ordres_predefinis is not None:
@@ -74,7 +74,7 @@ class CarnetOrdres:
             prix_fixing = self.trouver_fixing_ouverture()
             self.afficher_carnet()
             print(f"Prix de fixing de {type_fixing} : {prix_fixing}")
-        if type_fixing.lower() == "cloture":
+        elif type_fixing.lower() == "cloture":
             prix_fixing = self.trouver_fixing_cloture()
             self.afficher_carnet()
             print(f"Prix de fixing de {type_fixing} : {prix_fixing}")
@@ -86,11 +86,16 @@ class CarnetOrdres:
             cumul_achat = sum(a.quantite for a in self.achats if a.prix <= vente.prix)
             ecart = cumul_vente - cumul_achat
             if ecart > 0:
-                prix_fixing = vente.prix #prix fixing correspond au prix auquel l'écart de transaction devient positif
+                prix_fixing = vente.prix
                 break
         return prix_fixing
 
     def trouver_fixing_cloture(self):
+        for _ in range(FIXING_DURATION):
+            nouvel_ordre = saisir_nouvel_ordre()  # On saisit de nouveaux ordres pendant la période de fixing
+            self.ajouter_ordre(nouvel_ordre)
+
+        # Une fois la période de fixing terminée, on détermine le prix de fixing
         prix_fixing = DEFAULT_PRICE
         cumul_vente_initial = sum(vente.quantite for vente in self.ventes)
         cumul_achat_initial = sum(achat.quantite for achat in self.achats)
@@ -118,15 +123,15 @@ class CarnetOrdres:
 
         return prix_fixing
 
-    #execution des ordres
+    #excécution des ordres
     def executer_ordres(self):
         for vente in self.ventes:
-            # Recherche d'un ordre d'achat correspondant à l'ordre de vente
+             # Recherche d'un ordre d'achat correspondant à l'ordre de vente
             for achat in self.achats:
                 if vente.prix <= achat.prix and vente.quantite > 0 and achat.quantite > 0:
                     # Calculer la quantité à échanger
-                    quantite_echangee = min(vente.quantite, achat.quantite) # on calcule la quantité à  échanger
-                    vente.quantite -= quantite_echangee # on soustrait la quantité échangé
+                    quantite_echangee = min(vente.quantite, achat.quantite)
+                    vente.quantite -= quantite_echangee
                     achat.quantite -= quantite_echangee
                     print(f"Ordre exécuté : Vente de {quantite_echangee} actions à {achat.prix} € chacune.")
                     # Si l'un des ordres est complètement exécuté, le retirer du carnet
@@ -142,16 +147,16 @@ class CarnetOrdres:
             if achat.quantite > 0:
                 print(f"Ordre d'achat partiellement exécuté : {achat.quantite} actions restantes.")
 
-# on créer un carnet déja prédéfini
+# Création d'un carnet pré-défini
 def creer_carnet_predefini():
     carnet = CarnetOrdres()
     ordres_predefinis = []
-    for i in range(1, 11): # à chaque iténiration on ajoute 2 ordres
+    for i in range(1, 11):
         ordres_predefinis.append(Ordre("Achat", i * 10, 100 + i))
         ordres_predefinis.append(Ordre("Vente", i * 10, 110 - i))
-    return carnet, ordres_predefinis # on stocke ce carnet prédéfini
+    return carnet, ordres_predefinis
 
-#on insère les ordres dans le carnet
+# Saisie d'un nouvel ordre
 def saisir_nouvel_ordre():
     type_ordre = input("Entrez le type d'ordre (Achat/Vente) : ").capitalize()
     quantite = int(input("Entrez la quantité : "))
@@ -162,16 +167,15 @@ def saisir_nouvel_ordre():
     else:
         prix = float(input("Entrez le prix : "))
 
-    return Ordre(type_ordre, quantite, prix) # on stocke l'ordre (type, quantité, prix)
+    return Ordre(type_ordre, quantite, prix)
 
+# PROGRAMME PRINCIPAL
+carnet, ordres_predefinis = creer_carnet_predefini()
+carnet.afficher_carnet()
 
-#PROGRAMME PRINCIPAL
-carnet, ordres_predefinis = creer_carnet_predefini() # on stocke les 2 valeurs retournées dans 2 variables (carnet et ordres_prédéfinis)
-carnet.afficher_carnet()  # on affiche la carnet créer au préalable
+carnet.creer_fixing("ouverture", ordres_predefinis)
 
-carnet.creer_fixing("ouverture", ordres_predefinis)  # Fixing d'ouverture
-
-while True: #on insère de nouveaux ordres apres le calcul de fixing effectué => cotation en continu
+while True:
     choix = input("Voulez-vous saisir un nouvel ordre ? (Oui/Non) : ").lower()
     if choix == "oui":
         nouvel_ordre = saisir_nouvel_ordre()
@@ -183,8 +187,8 @@ while True: #on insère de nouveaux ordres apres le calcul de fixing effectué =
     else:
         print("Veuillez répondre par 'Oui' ou 'Non'.")
 
-carnet.executer_ordres() # exceution des ordres apres le fixing douverture => continue
+carnet.executer_ordres()
 
-carnet.afficher_carnet() #on affiche le carnet avec ces nouvelles ordres
+carnet.afficher_carnet()
 
-carnet.creer_fixing("cloture")  # Fixing d'ouverture
+carnet.creer_fixing("cloture")
