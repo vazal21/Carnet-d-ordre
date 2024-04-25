@@ -125,6 +125,9 @@ class CarnetOrdres:
 
     #excécution des ordres
     def executer_ordres(self):
+        self.ventes.sort(key=lambda x: x.prix)
+        self.achats.sort(key=lambda x: x.prix)
+
         for vente in self.ventes:
              # Recherche d'un ordre d'achat correspondant à l'ordre de vente
             for achat in self.achats:
