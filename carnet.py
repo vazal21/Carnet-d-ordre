@@ -92,7 +92,7 @@ class CarnetOrdres:
 
     def trouver_fixing_cloture(self):
         for _ in range(FIXING_DURATION):
-            nouvel_ordre = saisir_nouvel_ordre()  # On saisit de nouveaux ordres pendant la période de fixing
+            nouvel_ordre = saisir_nouvel_ordre_cloture()  # On saisit de nouveaux ordres pendant la période de fixing
             self.ajouter_ordre(nouvel_ordre)
 
         # Une fois la période de fixing terminée, on détermine le prix de fixing
@@ -125,7 +125,7 @@ class CarnetOrdres:
 
     #excécution des ordres
     def executer_ordres(self):
-        
+
 
         for vente in self.ventes:
              # Recherche d'un ordre d'achat correspondant à l'ordre de vente
@@ -171,6 +171,14 @@ def saisir_nouvel_ordre():
 
     return Ordre(type_ordre, quantite, prix)
 
+# Saisie d'un nouvel ordre pour fixing de cloture
+def saisir_nouvel_ordre_cloture():
+    type_ordre = input("Entrez le type d'ordre (Achat/Vente) : ").capitalize()
+    quantite = int(input("Entrez la quantité : "))
+    prix = float(input("Entrez le prix : "))
+
+    return Ordre(type_ordre, quantite, prix)
+
 # PROGRAMME PRINCIPAL
 carnet, ordres_predefinis = creer_carnet_predefini()
 carnet.afficher_carnet()
@@ -194,3 +202,6 @@ carnet.executer_ordres()
 carnet.afficher_carnet()
 
 carnet.creer_fixing("cloture")
+
+
+
