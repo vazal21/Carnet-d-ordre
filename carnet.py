@@ -171,7 +171,7 @@ def saisir_nouvel_ordre():
 
     return Ordre(type_ordre, quantite, prix)
 
-# Saisie d'un nouvel ordre pour fixing de cloture
+# Saisie d'un nouvel ordre pour fixing de cloture, on enleve le prix de marché 
 def saisir_nouvel_ordre_cloture():
     type_ordre = input("Entrez le type d'ordre (Achat/Vente) : ").capitalize()
     quantite = int(input("Entrez la quantité : "))
